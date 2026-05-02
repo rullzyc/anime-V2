@@ -1,7 +1,7 @@
 // IP LAN komputer Anda - agar HP bisa mengakses backend FastAPI
 // Jika menggunakan emulator Android: 10.0.2.2
 // Jika menggunakan HP fisik lewat WiFi: gunakan IP LAN komputer Anda
-const BASE_URL = 'http://192.168.1.35:8000';
+const BASE_URL = 'https://anime-v2.onrender.com';
 
 /**
  * Helper: Proxy image URL melalui backend kita agar bypass hotlink protection

@@ -1,18 +1,87 @@
 import requests
 from bs4 import BeautifulSoup
 from API.extractor.desudrive import desudrive
+import base64
+import json
 
-def getHost():
-	response = requests.get('https://otakudesu.io/')
-	soup = BeautifulSoup(response.text, features='html.parser')
+host = "https://otakudesu.blog/"
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+}
 
-	url_link = soup.find('a', {'id': 'skip'})
-	if url_link:
-		return url_link['href']
-	else:
-		raise Exception('Cannot find the host link')
+# Override requests.get to always use headers
+original_get = requests.get
+def custom_get(url, **kwargs):
+    if 'headers' not in kwargs:
+        kwargs['headers'] = headers
+    return original_get(url, **kwargs)
+requests.get = custom_get
 
-host = getHost()
+AJAX_URL = "https://otakudesu.blog/wp-admin/admin-ajax.php"
+_nonce_cache = None
+
+def _get_nonce():
+    global _nonce_cache
+    if _nonce_cache:
+        return _nonce_cache
+    res = requests.post(AJAX_URL, data={"action": "aa1208d27f29ca340c92c66d1926f13f"}, headers=headers)
+    _nonce_cache = res.json().get("data")
+    return _nonce_cache
+
+def getStreams(episode_url):
+    """Fetch available stream mirror URLs for all qualities from an episode page."""
+    page = BeautifulSoup(requests.get(episode_url).text, features="html.parser")
+    mirror = page.find('div', class_='mirrorstream')
+    if not mirror:
+        return {}
+
+    nonce = _get_nonce()
+    streams = {}  # { "480p": { "updesu": "https://...", ... }, "720p": {...} }
+
+    for ul in mirror.find_all('ul'):
+        # class is like 'm480p', 'm720p', etc.
+        cls = ul.get('class', [''])[0]
+        quality = cls.lstrip('m')  # "480p", "720p"
+        streams[quality] = {}
+
+        for a in ul.find_all('a'):
+            data_b64 = a.get('data-content', '')
+            server = a.text.strip()
+            if not data_b64:
+                continue
+            try:
+                payload = json.loads(base64.b64decode(data_b64).decode())
+                res = requests.post(AJAX_URL, data={
+                    **payload,
+                    "nonce": nonce,
+                    "action": "2a3505c93b0035d3f455df82bf976b84"
+                }, headers=headers)
+                iframe_html = base64.b64decode(res.json().get("data", "")).decode()
+                soup_iframe = BeautifulSoup(iframe_html, "html.parser")
+                iframe = soup_iframe.find('iframe')
+                if iframe and iframe.get('src'):
+                    streams[quality][server] = iframe['src']
+            except Exception as e:
+                streams[quality][server] = f"error:{e}"
+
+    return streams
+
+def getSchedule():
+    schedule = {}
+    for page_num in range(1, 4):
+        try:
+            animes = getOngoing(page_num)
+            for a in animes:
+                day = a.get("hari", "Lainnya")
+                if not day:
+                    day = "Lainnya"
+                if day not in schedule:
+                    schedule[day] = []
+                if not any(existing['url'] == a['url'] for existing in schedule[day]):
+                    schedule[day].append(a)
+        except Exception:
+            pass
+    return schedule
 
 def getOngoing(next_page=1):
 	data = BeautifulSoup(requests.get(host + f"ongoing-anime/page/{next_page}/").text, features="html.parser")
@@ -76,6 +145,11 @@ def getEpisodes(url):
 def getDownload(url):
 	data = BeautifulSoup(requests.get(url).text, features="html.parser")
 	ret = {}
+
+	# Extract stream link
+	iframe_container = data.find('div', {'class': 'responsive-embed-stream'})
+	if iframe_container and iframe_container.find('iframe'):
+		ret['stream_url'] = iframe_container.find('iframe')['src']
 
 	download = data.find('div', {'class': 'download'})
 	if download:

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyAnimeIndo - Nonton Anime Sub Indo</title>
+    <meta name="description" content="Nonton anime subtitle Indonesia tanpa iklan. Gratis dan tanpa berlangganan.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css?v=1.2">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#f0f4f8">
+</head>
+<body>
+
+    <!-- Mobile Overlay (PWA Download Prompt) -->
+    <div id="mobileOverlay" class="mobile-overlay hidden">
+        <div class="mo-content">
+            <img src="/static/icon-192.png" alt="Logo" class="mo-logo">
+            <h2>PyAnimeIndo App</h2>
+            <p>Untuk menonton di HP, silakan install aplikasi kami agar lebih cepat dan nyaman.</p>
+            <button id="btnInstallPwa" class="btn-install hidden">Install Aplikasi</button>
+            <p id="installInstruction" class="install-instruction hidden">Klik tombol Install di atas, atau pilih "Add to Home Screen" dari menu browser Anda.</p>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="https://i.pinimg.com/280x280_RS/8e/a0/7b/8ea07b58c17c028eeb0fd5b4bde1ecce.jpg" alt="Avatar" class="avatar"
+                 onerror="this.src='https://ui-avatars.com/api/?name=P&background=2b6cb0&color=fff&size=64'">
+            <div>
+                <div class="sidebar-title">PyAnimeIndo</div>
+                <div class="sidebar-sub">By Arul</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" id="nav-home" onclick="window.gotoHome(event)">
+                <i class="ri-layout-grid-line"></i><span>Eps terbaru</span>
+            </a>
+            <a href="#" class="nav-item" id="nav-schedule" onclick="window.gotoSchedule(event)">
+                <i class="ri-calendar-line"></i><span>Jadwal</span>
+            </a>
+            <a href="#" class="nav-item" id="nav-genre" onclick="window.gotoGenre(event)">
+                <i class="ri-film-line"></i><span>Genre</span>
+            </a>
+            <a href="#" class="nav-item" id="nav-history" onclick="window.gotoHistory(event)">
+                <i class="ri-history-line"></i><span>Riwayat</span>
+            </a>
+            <a href="#" class="nav-item" id="nav-saved" onclick="window.gotoSaved(event)">
+                <i class="ri-bookmark-line"></i><span>Tersimpan</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <h2 id="pageTitle">Episode terbaru</h2>
+            <div class="search-wrap">
+                <i class="ri-search-line"></i>
+                <input type="text" id="searchInput" placeholder="Cari anime...">
+            </div>
+        </header>
+
+        <!-- === GRID VIEW === -->
+        <div id="gridView">
+            <div id="loader" class="loader-wrap"><div class="spinner"></div></div>
+            <div id="animeGrid" class="anime-grid"></div>
+            <div id="loadMore" class="load-more hidden">
+                <button onclick="window.loadNextPage()">Muat lebih banyak</button>
+            </div>
+        </div>
+
+        <!-- === DETAIL VIEW === -->
+        <div id="detailView" class="hidden">
+            <button class="back-btn" onclick="window.goBack()">
+                <i class="ri-arrow-left-line"></i> Kembali
+            </button>
+            <div id="detailContent"></div>
+        </div>
+
+        <!-- === WATCH VIEW === -->
+        <div id="watchView" class="hidden">
+            <button class="back-btn" id="backToDetailBtn">
+                <i class="ri-arrow-left-line"></i> Kembali ke Episode
+            </button>
+            <div id="watchContent"></div>
+        </div>
+
+        <!-- === HISTORY VIEW === -->
+        <div id="historyView" class="hidden">
+            <div id="historyContent"></div>
+        </div>
+
+        <!-- === SAVED VIEW === -->
+        <div id="savedView" class="hidden">
+            <div id="savedContent"></div>
+        </div>
+
+        <!-- === GENRE VIEW === -->
+        <div id="genreView" class="hidden">
+            <div id="genreContent"></div>
+        </div>
+
+        <!-- === SCHEDULE VIEW === -->
+        <div id="scheduleView" class="hidden">
+            <div id="scheduleContent">
+                <div class="loader-wrap"><div class="spinner"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js?v=1.2"></script>
+</body>
+</html>

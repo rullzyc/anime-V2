@@ -1,9 +1,10 @@
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 import os
 import uvicorn
+import requests as req_lib
 
 # Import existing scraping logic
 from API.otakudesu import (
@@ -94,6 +95,19 @@ async def api_streams(url: str = Query(..., description="Episode URL")):
 async def api_search(title: str = Query(..., description="Search title")):
     try:
         return {"status": "success", "data": searchAnime(title)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/img")
+async def api_img_proxy(url: str = Query(..., description="Image URL to proxy")):
+    """Proxy image requests to bypass hotlink protection."""
+    try:
+        r = req_lib.get(url, headers={
+            "Referer": "https://otakudesu.blog/",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }, timeout=10)
+        content_type = r.headers.get("Content-Type", "image/jpeg")
+        return Response(content=r.content, media_type=content_type)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
